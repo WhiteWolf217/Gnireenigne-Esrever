@@ -2,8 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
-void xor_encrypt(const char *input, uint8_t key, uint8_t *output) {
-    size_t len = strlen(input);
+void xor_decrypt(const uint8_t *input, size_t len, uint8_t key, char *output) {
     for (size_t i = 0; i < len; i++) {
         output[i] = input[i] ^ key;
     }
@@ -11,28 +10,34 @@ void xor_encrypt(const char *input, uint8_t key, uint8_t *output) {
 }
 
 int main() {
-    char input[256];
+    uint8_t input[256];
+    char output[256];
     uint8_t key;
-    uint8_t output[256];
+    size_t len;
 
-    printf("Enter a string to convert: ");
-    if (fgets(input, sizeof(input), stdin) == NULL) {
-        printf("Input error.\n");
+    printf("Enter the number of encrypted bytes: ");
+    if (scanf("%zu", &len) != 1 || len > sizeof(input)) {
+        printf("Invalid length.\n");
         return 1;
     }
-    input[strcspn(input, "\n")] = '\0';
 
-    printf("Enter XOR key (0-255): ");
+    printf("Enter the XOR key (0-255): ");
     if (scanf("%hhu", &key) != 1) {
         printf("Invalid key input.\n");
         return 1;
     }
-    xor_encrypt(input, key, output);
-    printf("XOR-encrypted format:\n");
-    for (size_t i = 0; i < strlen(input); i++) {
-        printf("0x%02X, ", output[i]);
+
+    printf("Enter the encrypted bytes (as hex, separated by spaces): ");
+    for (size_t i = 0; i < len; i++) {
+        unsigned int byte;
+        if (scanf("%x", &byte) != 1 || byte > 0xFF) {
+            printf("Invalid byte input.\n");
+            return 1;
+        }
+        input[i] = (uint8_t)byte;
     }
-    printf("\n");
+    xor_decrypt(input, len, key, output);
+    printf("Decrypted string: %s\n", output);
 
     return 0;
 }
